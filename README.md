@@ -11,13 +11,19 @@ These are made available by me under an Apache 2.0 license.
 
 http://www.apache.org/licenses/LICENSE-2.0.html
 
+Introduction
+============
+
+Scripts were reworked to ruby version. **ESzabbix.rb** requires *elasticsearch* gem, script works much faster than it's python version. This probably happens because of buggy *pyes* module, the connection to elasticsearch happens obscenely longat list with pyes 0.19.0. The next version of pyes doesn't work with Python 2.6. So the script was dismissed in favour of ruby version.
 
 How it works
 =============
 
-- Put ESzabbix.py in /opt/zabbix/externalscripts/ in the zabbix node
+- Put ESzabbix.rb in /opt/zabbix/externalscripts/ in the zabbix node or wherever your external scripts are.
 
-- Put ESzabbix.userparm in the zabbix include parameters dir, in this case "/opt/zabbix/agent_include"
+- Add zabbix user parameter to configuration.
+        UserParameter=ESzabbix[*],_CHANGE_TO_YOUR_EXTDIR/ESzabbix.rb $1 $2
+
 
 - Import ESzabbix_templates.xml to zabbix server
 
@@ -51,7 +57,7 @@ You will likely want to assign a value mapping for the ElasticSearch Cluster Sta
 In any event, the current list of included items is:
 
 * ES Cluster (11 Items)
-	- Cluster-wide records indexed per second
+    - Cluster-wide records indexed per second
 	- Cluster-wide storage size
 	- ElasticSearch Cluster Status
 	- Number of active primary shards
