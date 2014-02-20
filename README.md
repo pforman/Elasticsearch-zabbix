@@ -14,7 +14,7 @@ http://www.apache.org/licenses/LICENSE-2.0.html
 Introduction
 ============
 
-Scripts were reworked to ruby version. **ESzabbix.rb** requires *elasticsearch* gem, script works much faster than it's python version. This probably happens because of buggy *pyes* module, the connection to elasticsearch happens obscenely longat list with pyes 0.19.0. The next version of pyes doesn't work with Python 2.6. So the script was dismissed in favour of ruby version.
+Scripts were reworked to ruby version. **ESzabbix.rb** requires *elasticsearch* gem, script works much faster than its python version. This probably happens because of buggy *pyes* module, the connection to elasticsearch happens obscenely long at least with pyes 0.19.0. The next version of pyes doesn't work with Python 2.6. So the script was dismissed in favour of ruby version.
 
 How it works
 =============
