@@ -1,77 +1,152 @@
 #!/usr/bin/env ruby
 
 require 'elasticsearch'
+require 'json'
 
-class ElasticStats
-  attr_reader :indices, :source, :item, :item_map
+class ESStats
+  attr_reader :es_read_timeout, :cache_timeout, :metrics, :cache_file
 
-  def initialize(source, item)
-    @indices = {
-      docs:         ['count', 'deleted'],
-      get:          ['missing_total', 'exists_total', 'current', 'time_in_millis', 'missing_time_in_millis', 'exists_time_in_millis', 'total'],
-      search:       ['query_total', 'fetch_time_in_millis', 'fetch_total', 'fetch_time', 'query_current', 'fetch_current', 'query_time_in_millis'],
-      indexing:     ['delete_time_in_millis', 'index_total', 'index_current', 'delete_total', 'index_time_in_millis', 'delete_current'],
-      store:        ['size_in_bytes', 'throttle_time_in_millis'],
-      filter_cache: ['filter_size_in_bytes', 'field_evictions'],
-      fielddata:    ['field_size_in_bytes']
-    }
-    @item_map = {
-      'filter_size_in_bytes' => 'memory_size_in_bytes',
-      'field_size_in_bytes'  => 'memory_size_in_bytes',
-      'field_evictions'      => 'evictions'
-    }
-    @source = source
-    @item   = item
-    if item.nil? or source.nil?
-      zbx_fail("You must provide two script arguments source: cluster, service, node_id and item")
-    end
+  def initialize
+    @es_read_timeout = 10
+    @metrics       = ['jvm', 'os' ,'process']
+    @cache_file    = '/tmp/eszabbix_stats.cache'
+    @cache_timeout = 60
+    @node_id       = nil
   end
 
-  # retrieve metric for cluster, node or service
-  def metric
-    index = indices.find {|o| o.last.include?(item)}
-    index = index.nil? ? '' : index.first.to_s
+  # Read es statistics, cache opearation.
+  def stats
+    @stats ||= begin
+      mtime = File.mtime(cache_file) rescue (Time.now - cache_timeout)
 
-    if source == 'cluster'
-      # cluster items that will be aggregated
-      if [:docs, :search, :indexing, :get, :store].include?(index.to_sym)
-        stats = nodes_stats
-        stats.inject(0) {|s, o| s + o['indices'][index][item_map[item] || item]}
+      # load statistics from elasticsearch
+      if Time.now - mtime > cache_timeout
+        hash  = {node_id: '_local'}
+        metrics.inject(hash) {|h, v| h[v.to_sym] = true; h}
+        node_info = client.nodes.info(hash)
+        node_id   = node_info['nodes'].keys.first
 
-      # otherwise it's supposed to be a cluster health item
+        # read indices stats for all cluster nodes
+        stats = client.nodes.stats metric: 'indices'
+        stats['nodes'][node_id].merge!(node_info['nodes'][node_id])
+
+        # cache results
+        File.open(cache_file, 'w') {|f| f.write(JSON.pretty_generate(stats))}
+        stats
       else
-        stats = client.cluster.health
-        case item
-        when 'status'
-          ['green', 'yellow', 'red'].find_index {|i| i == stats['status']}
-        else
-          stats[item] or zbx_fail("Unknown cluster health item: #{item}")
-        end
+        # from cache
+        JSON.parse(IO.read(cache_file))
       end
-    elsif source == 'service'
-      zbx_fail("Unknown service item: #{item}") if item != 'status'
-      client.ping and 1 rescue 0
-    else
-      zbx_fail("Unknown indices item: #{item}") if index.empty? 
-      stats = nodes_stats(source).first
-      stats['indices'][index][item_map[item] || item]
     end
   end
 
-  def nodes_stats(node_id=nil)
-    client.nodes.stats({node_id: node_id, metric: 'indices', human: false})['nodes'].values
+  def node_id
+    @node_id ||= begin
+      # node_id becomes available after stats has been read
+      # local node is the only one which has extended metrics
+      idx = stats['nodes'].find_index do |id, hash|
+        hash.keys.any? {|k| metrics.include? k}
+      end
+      stats['nodes'].keys[idx]
+    end
   end
 
-
+  # return client with preconfigured timeout
   def client
     @client ||= begin
       c = Elasticsearch::Client.new
-      c.transport.get_connection.connection.options.open_timeout = 2
-      c.transport.get_connection.connection.options.timeout      = 3
+      c.transport.get_connection.connection.options.open_timeout = es_read_timeout
+      c.transport.get_connection.connection.options.timeout      = es_read_timeout
       c
     end
-  rescue
-    zbx_fail("Couldn't connect to Elasticsearch")
+  end
+end
+
+class ESZabbix
+  attr_reader :es, :path, :item
+
+  def initialize
+    @es = ESStats.new
+    @mode = nil
+    @modes_supported = :cluster, :service
+    @service_items = ['ping']
+    @cluster_items = ['health']
+  end
+
+  def metric(item)
+    parse_item(item)
+    case mode
+    when :service
+      service_value
+    when :cluster
+      cluster_value
+    else
+      # get value directly from node statistics
+      direct_value_from(es.stats['nodes'][es.node_id])
+    end
+  rescue Timeout::Error
+    zbx_fail "Couldn't connect to ElasticSearch opearation timed out"
+  rescue Exception => e
+    zbx_fail e.message + "\n" + e.backtrace.join("\n")
+  end
+
+  private
+
+  attr_reader :mode
+
+  # retrieve cluster metric value
+  def cluster_value
+    case path
+    when 'health'
+      stats = es.client.cluster.health
+      # 0, 1, 2 for green, yellow, red respectively
+      ['green', 'yellow', 'red'].find_index {|i| i == stats['status']}
+    else
+      unless path.start_with?('indices')
+        zbx_fail "Cluster aggregation is only available for indices metrics"
+      end
+      es.stats['nodes'].inject(0) do |value, pair|
+        node_stats = pair.last
+        value = value + direct_value_from(node_stats)
+      end
+    end
+  rescue Timeout::Error
+    # In case of timeout health is reported as GREEN! The actual cluster health
+    # must be aggregated in zabbix to avoid useless triggering for each node.
+    path == 'health' ? 0 : raise
+  end
+
+  # retrieve cluster metric value
+  def service_value
+    case path
+    when 'ping'
+      es.client.ping ? 1 : 0
+    else
+      zbx_fail("Unknown service item #{path}")
+    end
+  rescue Timeout::Error
+    0
+  end
+
+  def direct_value_from(hash)
+    value = path.split('.').inject(hash) {|h, i| h[i]}
+    value or zbx_fail "Value for item #{path} is empty"
+  end
+
+  # parse item like "(cluster:)indices.docs.count"
+  def parse_item(item)
+    @item = item
+    zbx_fail "You must provide zabbix statistics path like: (cluster:)indices.docs.count" if item.nil?
+    parsed = item.split(/(\w+):/)
+    case parsed[1]
+    when nil
+      @path = parsed[0].to_s
+    when 'cluster', 'service'
+      @mode = parsed[1].to_sym
+      @path = parsed[2].to_s
+    else
+      zbx_fail "Unknown opearation mode #{parsed[1]}"
+    end
   end
 
   # zabbix fail with unsupported item message
@@ -80,8 +155,7 @@ class ElasticStats
     puts "ZBX_NOTSUPPORTED"
     exit(2)
   end
-
 end
 
-elastic = ElasticStats.new(ARGV[0], ARGV[1])
-puts elastic.metric
+stats = ESZabbix.new
+puts stats.metric(ARGV[0])
