@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>2.0</version>
-    <date>2012-12-20T05:16:37Z</date>
+    <date>2014-02-28T09:00:38Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -28,7 +28,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,index_total]</key>
+                    <key>ESzabbix[nodes_stats,cluster:indices.indexing.index_total]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -67,7 +67,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,size_in_bytes]</key>
+                    <key>ESzabbix[nodes_stats,cluster:indices.store.size_in_bytes]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -101,12 +101,12 @@
                     <valuemap/>
                 </item>
                 <item>
-                    <name>ElasticSearch Cluster Status</name>
+                    <name>ElasticSearch ESzabbix cluster status</name>
                     <type>7</type>
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,status]</key>
+                    <key>ESzabbix[health,status]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -130,7 +130,7 @@
                     <publickey/>
                     <privatekey/>
                     <port/>
-                    <description/>
+                    <description>This item is the ElastSearch cluster status provided by ESzabbix script. In case if status can't be retrieved, for example service failure Green will be notified. To get cluster wide status this item must aggregated with max function over the nodes group.</description>
                     <inventory_link>0</inventory_link>
                     <applications>
                         <application>
@@ -138,7 +138,7 @@
                         </application>
                     </applications>
                     <valuemap>
-                        <name>ES Cluster State</name>
+                        <name>ES Cluster Status</name>
                     </valuemap>
                 </item>
                 <item>
@@ -147,7 +147,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,active_primary_shards]</key>
+                    <key>ESzabbix[health,active_primary_shards]</key>
                     <delay>600</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -186,7 +186,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,active_shards]</key>
+                    <key>ESzabbix[health,active_shards]</key>
                     <delay>600</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -225,7 +225,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,number_of_data_nodes]</key>
+                    <key>ESzabbix[health,number_of_data_nodes]</key>
                     <delay>600</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -264,7 +264,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,initializing_shards]</key>
+                    <key>ESzabbix[health,initializing_shards]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -303,7 +303,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,number_of_nodes]</key>
+                    <key>ESzabbix[health,number_of_nodes]</key>
                     <delay>600</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -342,7 +342,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,relocating_shards]</key>
+                    <key>ESzabbix[health,relocating_shards]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -381,7 +381,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,unassigned_shards]</key>
+                    <key>ESzabbix[health,unassigned_shards]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -420,7 +420,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[cluster,count]</key>
+                    <key>ESzabbix[nodes_stats,cluster:indices.docs.count]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -460,6 +460,260 @@
             <screens/>
         </template>
         <template>
+            <template>Elasticsearch Health</template>
+            <name>Elasticsearch Health</name>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>ES Health</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>JVM commited heap size</name>
+                    <type>7</type>
+                    <snmp_community/>
+                    <multiplier>0</multiplier>
+                    <snmp_oid/>
+                    <key>ESzabbix[nodes_stats,jvm.mem.heap_committed_in_bytes]</key>
+                    <delay>60</delay>
+                    <history>30</history>
+                    <trends>365</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units>B</units>
+                    <delta>0</delta>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privpassphrase/>
+                    <formula>1</formula>
+                    <delay_flex/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <data_type>0</data_type>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>ES Health</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                </item>
+                <item>
+                    <name>JVM heap average ratio</name>
+                    <type>15</type>
+                    <snmp_community/>
+                    <multiplier>0</multiplier>
+                    <snmp_oid/>
+                    <key>es.jvm.heap_ratio</key>
+                    <delay>60</delay>
+                    <history>30</history>
+                    <trends>365</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units>%</units>
+                    <delta>0</delta>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privpassphrase/>
+                    <formula>1</formula>
+                    <delay_flex/>
+                    <params>avg(&quot;ESzabbix[nodes_stats,jvm.mem.heap_used_in_bytes]&quot;,600)/last(&quot;ESzabbix[nodes_stats,jvm.mem.heap_committed_in_bytes]&quot;)*100</params>
+                    <ipmi_sensor/>
+                    <data_type>0</data_type>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>ES Health</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                </item>
+                <item>
+                    <name>JVM used heap size</name>
+                    <type>7</type>
+                    <snmp_community/>
+                    <multiplier>0</multiplier>
+                    <snmp_oid/>
+                    <key>ESzabbix[nodes_stats,jvm.mem.heap_used_in_bytes]</key>
+                    <delay>600</delay>
+                    <history>30</history>
+                    <trends>365</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units>B</units>
+                    <delta>0</delta>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privpassphrase/>
+                    <formula>1</formula>
+                    <delay_flex/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <data_type>0</data_type>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>ES Health</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                </item>
+                <item>
+                    <name>Process max file descriptors</name>
+                    <type>7</type>
+                    <snmp_community/>
+                    <multiplier>0</multiplier>
+                    <snmp_oid/>
+                    <key>ESzabbix[nodes_info,process.max_file_descriptors]</key>
+                    <delay>60</delay>
+                    <history>30</history>
+                    <trends>365</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <delta>0</delta>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privpassphrase/>
+                    <formula>1</formula>
+                    <delay_flex/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <data_type>0</data_type>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>ES Health</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                </item>
+                <item>
+                    <name>Process resident memory size</name>
+                    <type>7</type>
+                    <snmp_community/>
+                    <multiplier>0</multiplier>
+                    <snmp_oid/>
+                    <key>ESzabbix[nodes_stats,process.mem.resident_in_bytes]</key>
+                    <delay>60</delay>
+                    <history>30</history>
+                    <trends>365</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units>B</units>
+                    <delta>0</delta>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privpassphrase/>
+                    <formula>1</formula>
+                    <delay_flex/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <data_type>0</data_type>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>ES Health</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                </item>
+                <item>
+                    <name>Process used open file descriptors</name>
+                    <type>7</type>
+                    <snmp_community/>
+                    <multiplier>0</multiplier>
+                    <snmp_oid/>
+                    <key>ESzabbix[nodes_stats,process.open_file_descriptors]</key>
+                    <delay>60</delay>
+                    <history>90</history>
+                    <trends>365</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <delta>0</delta>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privpassphrase/>
+                    <formula>1</formula>
+                    <delay_flex/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <data_type>0</data_type>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications>
+                        <application>
+                            <name>ES Health</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                </item>
+            </items>
+            <discovery_rules/>
+            <macros/>
+            <templates/>
+            <screens/>
+        </template>
+        <template>
             <template>Elasticsearch Node</template>
             <name>Elasticsearch Node</name>
             <groups>
@@ -482,7 +736,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[{$NODENAME},field_size_in_bytes]</key>
+                    <key>ESzabbix[nodes_stats,indices.fielddata.memory_size_in_bytes]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -521,7 +775,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[{$NODENAME},filter_size_in_bytes]</key>
+                    <key>ESzabbix[nodes_stats,indices.filter_cache.memory_size_in_bytes]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -560,7 +814,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[{$NODENAME},size_in_bytes]</key>
+                    <key>ESzabbix[nodes_stats,indices.store.size_in_bytes]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -599,7 +853,7 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[{$NODENAME},index_total]</key>
+                    <key>ESzabbix[nodes_stats,indices.indexing.index_total]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
@@ -638,10 +892,6 @@
             <templates/>
             <screens/>
         </template>
-
-
-
-
         <template>
             <template>Elasticsearch Service</template>
             <name>Elasticsearch Service</name>
@@ -654,12 +904,7 @@
                 <application>
                     <name>ES Service</name>
                 </application>
-                <application>
-                    <name>ES Service</name>
-                </application>
             </applications>
-
-
             <items>
                 <item>
                     <name>Elasticsearch Service Status</name>
@@ -667,14 +912,14 @@
                     <snmp_community/>
                     <multiplier>0</multiplier>
                     <snmp_oid/>
-                    <key>ESzabbix[service,status]</key>
+                    <key>ESzabbix[service,ping]</key>
                     <delay>60</delay>
                     <history>30</history>
                     <trends>365</trends>
                     <status>0</status>
                     <value_type>3</value_type>
                     <allowed_hosts/>
-                    <units>B</units>
+                    <units/>
                     <delta>0</delta>
                     <snmpv3_securityname/>
                     <snmpv3_securitylevel>0</snmpv3_securitylevel>
@@ -698,9 +943,10 @@
                             <name>ES Service</name>
                         </application>
                     </applications>
-                    <valuemap/>
+                    <valuemap>
+                        <name>Service state</name>
+                    </valuemap>
                 </item>
-
             </items>
             <discovery_rules/>
             <macros/>
@@ -710,41 +956,136 @@
     </templates>
     <triggers>
         <trigger>
-            <expression>{Elasticsearch Cluster:ESzabbix[cluster,status].last(0)}=2</expression>
-            <name>Elasticsearch Cluster in {ITEM.LASTVALUE} state</name>
+            <expression>{Elasticsearch Health:es.jvm.heap_ratio.last(0)}&gt;80</expression>
+            <name>ElasticSearch JVM heap memory is used over 80% on {HOSTNAME}</name>
             <url/>
             <status>0</status>
             <priority>4</priority>
-            <description>The cluster health status is: green, yellow or red. On the shard level, a red status indicates that the specific shard is not allocated in the cluster, yellow means that the primary shard is allocated but replicas are not, and green means that all shards are allocated. The index level status is controlled by the worst shard status. The cluster status is controlled by the worst index status.</description>
+            <description/>
             <type>0</type>
             <dependencies/>
         </trigger>
         <trigger>
-            <expression>{Elasticsearch Cluster:ESzabbix[cluster,status].last(0)}=1</expression>
-            <name>Elasticsearch Cluster in {ITEM.LASTVALUE} state</name>
+            <expression>{Elasticsearch Service:ESzabbix[service,ping].last(0)}=0</expression>
+            <name>Elasticsearch Service status on {HOSTNAME}</name>
             <url/>
-            <status>0</status>
+            <status>1</status>
             <priority>3</priority>
-            <description>The cluster health status is: green, yellow or red. On the shard level, a red status indicates that the specific shard is not allocated in the cluster, yellow means that the primary shard is allocated but replicas are not, and green means that all shards are allocated. The index level status is controlled by the worst shard status. The cluster status is controlled by the worst index status.</description>
-            <type>0</type>
-            <dependencies>
-                <dependency>
-                    <name>Elasticsearch Cluster in {ITEM.LASTVALUE} state</name>
-                    <expression>{Elasticsearch Cluster:ESzabbix[cluster,status].last(0)}=2</expression>
-                </dependency>
-            </dependencies>
-        </trigger>
-        <trigger>
-            <expression>{Elasticsearch Service:ESzabbix[service,status].last(0)}=0</expression>
-            <name>Elasticsearch Service status</name>
-            <url/>
-            <status>0</status>
-            <priority>4</priority>
             <description>Elasticsearch status is 0 value if ES service is running and 1 if ES service is down</description>
             <type>0</type>
             <dependencies/>
         </trigger>
-
-
+        <trigger>
+            <expression>{Elasticsearch Health:ESzabbix[nodes_stats,process.open_file_descriptors].last(0)}/{Elasticsearch Health:ESzabbix[nodes_info,process.max_file_descriptors].last(0)}&gt;0.8</expression>
+            <name>ElasticSearch used over 80% of file descriptors on {HOSTNAME}</name>
+            <url/>
+            <status>0</status>
+            <priority>3</priority>
+            <description/>
+            <type>0</type>
+            <dependencies/>
+        </trigger>
     </triggers>
+    <graphs>
+        <graph>
+            <name>ElasticSearch file descriptors usage</name>
+            <width>900</width>
+            <height>200</height>
+            <yaxismin>0.0000</yaxismin>
+            <yaxismax>100.0000</yaxismax>
+            <show_work_period>1</show_work_period>
+            <show_triggers>1</show_triggers>
+            <type>0</type>
+            <show_legend>1</show_legend>
+            <show_3d>0</show_3d>
+            <percent_left>0.0000</percent_left>
+            <percent_right>0.0000</percent_right>
+            <ymin_type_1>0</ymin_type_1>
+            <ymax_type_1>0</ymax_type_1>
+            <ymin_item_1>0</ymin_item_1>
+            <ymax_item_1>0</ymax_item_1>
+            <graph_items>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>2</drawtype>
+                    <color>008800</color>
+                    <yaxisside>0</yaxisside>
+                    <calc_fnc>2</calc_fnc>
+                    <type>0</type>
+                    <item>
+                        <host>Elasticsearch Health</host>
+                        <key>ESzabbix[nodes_info,process.max_file_descriptors]</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>5</drawtype>
+                    <color>FF6666</color>
+                    <yaxisside>0</yaxisside>
+                    <calc_fnc>2</calc_fnc>
+                    <type>0</type>
+                    <item>
+                        <host>Elasticsearch Health</host>
+                        <key>ESzabbix[nodes_stats,process.open_file_descriptors]</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+        <graph>
+            <name>ElasticSearch JVM Heap Mem</name>
+            <width>900</width>
+            <height>200</height>
+            <yaxismin>0.0000</yaxismin>
+            <yaxismax>100.0000</yaxismax>
+            <show_work_period>1</show_work_period>
+            <show_triggers>1</show_triggers>
+            <type>0</type>
+            <show_legend>1</show_legend>
+            <show_3d>0</show_3d>
+            <percent_left>0.0000</percent_left>
+            <percent_right>0.0000</percent_right>
+            <ymin_type_1>0</ymin_type_1>
+            <ymax_type_1>0</ymax_type_1>
+            <ymin_item_1>0</ymin_item_1>
+            <ymax_item_1>0</ymax_item_1>
+            <graph_items>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>5</drawtype>
+                    <color>FF6666</color>
+                    <yaxisside>0</yaxisside>
+                    <calc_fnc>2</calc_fnc>
+                    <type>0</type>
+                    <item>
+                        <host>Elasticsearch Health</host>
+                        <key>ESzabbix[nodes_stats,jvm.mem.heap_committed_in_bytes]</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>2</sortorder>
+                    <drawtype>5</drawtype>
+                    <color>9999FF</color>
+                    <yaxisside>0</yaxisside>
+                    <calc_fnc>2</calc_fnc>
+                    <type>0</type>
+                    <item>
+                        <host>Elasticsearch Health</host>
+                        <key>ESzabbix[nodes_stats,jvm.mem.heap_used_in_bytes]</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>0</sortorder>
+                    <drawtype>2</drawtype>
+                    <color>0000C8</color>
+                    <yaxisside>0</yaxisside>
+                    <calc_fnc>2</calc_fnc>
+                    <type>0</type>
+                    <item>
+                        <host>Elasticsearch Health</host>
+                        <key>ESzabbix[nodes_stats,process.mem.resident_in_bytes]</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
 </zabbix_export>
