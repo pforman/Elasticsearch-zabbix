@@ -3,9 +3,10 @@ Elasticsearch-zabbix
 
 Elasticsearch template and script for zabbix 2.0
 
-This project is a fork of Elasticsearch template from zabbix-grab-bag
+Originally it was a fork of Elasticsearch template from zabbix-grab-bag but everything has been rewritten from scratch.
 
 https://github.com/untergeek/zabbix-grab-bag
+
 
 These are made available by me under an Apache 2.0 license.
 
@@ -14,7 +15,7 @@ http://www.apache.org/licenses/LICENSE-2.0.html
 Introduction
 ============
 
-Scripts were reworked to ruby version. **ESzabbix.rb** requires *elasticsearch* gem, script works much faster than its python version. This probably happens because of buggy *pyes* module, the connection to elasticsearch happens obscenely long at least with pyes 0.19.0. The next version of pyes doesn't work with Python 2.6. So the script was dismissed in favour of ruby version.
+Solution consists of **ESzabbix.rb** script which requires *elasticsearch* gem and *ESzabbix_templates*. The script is invoked as user parameter on ElasticSearch node, it caches the results for a specified cache_timeout (default 60s), this reduces the number of queries to ES.
 
 How it works
 =============
@@ -30,7 +31,6 @@ How it works
 Specs
 =====
 
-
 The items here are for monitoring Elasticsearch (presumably for logstash).
 
 The template xml file actually contains three templates:
@@ -41,7 +41,7 @@ The template xml file actually contains three templates:
 
 3. Elasticsearch Service (ES service status)
 
-The node name is expected as a host-level macro {$NODENAME}
+4. Elasticsearch Health (JVM, openfiles descriptors)
 
 There are triggers assigned for the cluster state:
 
@@ -51,28 +51,19 @@ There are triggers assigned for the cluster state:
 
 2 = Red (High)
 
+Cluster status should be aggregated item as max for a group of ElasticSearch nodes, because the script will report **Green** when the actual node's ES service is down. Using an aggregated item enables single triggering for the Cluster status.
 
-You will likely want to assign a value mapping for the ElasticSearch Cluster Status item.
+Usage
+=====
 
-In any event, the current list of included items is:
+The scripts stores information retrieved from Elasticsearch and stored into hash, which has three metric sub-groups: **nodes_stats**, **nodes_info**, **health** . After metrics data has been retrieved from ES, the script gets value for the specified item.
 
-* ES Cluster (11 Items)
-    - Cluster-wide records indexed per second
-	- Cluster-wide storage size
-	- ElasticSearch Cluster Status
-	- Number of active primary shards
-	- Number of active shards
-	- Number of data nodes
-	- Number of initializing shards
-	- Number of nodes
-	- Number of relocating shards
-	- Number of unassigned shards
-	- Total number of records
-* ES Cache (2 Items)
-	- Node Field Cache Size
-	- Node Filter Cache Size
-* ES Node (2 Items)
-	- Node Storage Size
-	- Records indexed per second
-* ES Service (1 Item)
-	- Elasticsearch service status
+For example, invoking script with two arguments `nodes_stats indices.docs.count`, the script will return value from nodes_stats with path *indices.docs.count*. This value concerns only to the node where script is invoked. Since indices metrics can be aggregated over the cluster, script supports **cluster:** prefix. Use `nodes_stats cluster:indices.docs.count` to get documents count of the whole cluster. The **nodes_stats indices.*** metrics are available for all of the cluster nodes, all other metrics are just for a local node only.
+
+Except this three metrics sub groups script has *"service"* metrics but it's only used as `service ping` which shows if service is alive.
+
+Provided templates rely on the described script operation and provide many useful items for monitoring Elasticsearch. More new items can be easily introduced without changes into the script, since these metric groups include even more useful metrics data than ESzabbix templates implements.
+
+Authors
+=======
+* Denis Barishev (<denis.barishev@gmail.com>)
