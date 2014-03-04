@@ -108,7 +108,7 @@ class ESZabbix
         if metric_group == 'health' && metric_path == 'status'
           # Report status as green in case of failure, the item should be
           # aggregated over a cluster to provide cluster status.
-          ['green','yellow','red'].find_index {|s| es.health['status'] = s} rescue 0
+          ['green','yellow','red'].find_index {|s| metrics['status'] == s} rescue 0
         elsif metric_group == 'health'
           read_metric_from(metrics)
         else
