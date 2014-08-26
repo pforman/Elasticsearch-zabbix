@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Debian base install of 1.8 needs this explicitly
+require 'rubygems'
 require 'elasticsearch'
 require 'json'
 
@@ -54,17 +56,18 @@ class ESStats
       if Time.now - mtime > cache_timeout
         # Load local nodes info for all specified metrics
         info_opts = @metrics.inject({}) {|h, m| h[m.to_sym] = true; h}
-        node_info = client.nodes.info(info_opts.merge({node_id: '_local'}))
+        node_info = client.nodes.info(info_opts.merge({:node_id => '_local'}))
         @node_id ||= node_info['nodes'].keys.first
         all['nodes_info'] = node_info
         all['health'] = client.cluster.health
 
         # Read indices metrics cluster-wide
-        all['nodes_stats'] = client.nodes.stats metric: 'indices'
+        all['nodes_stats'] = client.nodes.stats :metric => 'indices'
 
         # Separately for each metric load node local stats, should work on both 0.90, 1.x
         @metrics.inject(all['nodes_stats']) do |hash, m|
-          data = client.nodes.stats({node_id: '_local', metric: m})
+          # This has issues for remote monitoring.  Drop the :node_id for that.
+          data = client.nodes.stats({:node_id => '_local', :metric => m})
           hash['nodes'][node_id].merge!(data['nodes'][node_id])
           hash
         end
